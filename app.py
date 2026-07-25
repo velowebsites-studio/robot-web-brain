@@ -21,7 +21,7 @@ robot_html = """
         body {
             margin: 0;
             padding: 0;
-            background-color: #0d0f12;
+            background-color: #0b0c0e;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -33,160 +33,136 @@ robot_html = """
             user-select: none;
         }
 
-        /* Robot Stage Container */
+        /* Floating Stage Animation */
         .robot-wrapper {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            animation: floatHover 3.5s ease-in-out infinite alternate;
         }
 
-        /* Hands / Arms */
-        .arm {
+        @keyframes floatHover {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-12px); }
+        }
+
+        /* Top Antenna */
+        .antenna-stem {
             position: absolute;
-            width: 35px;
-            height: 100px;
-            background: linear-gradient(145deg, #ffffff, #dcdcdc);
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            top: 110px;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            top: -28px;
+            width: 8px;
+            height: 30px;
+            background: linear-gradient(180deg, #ffffff, #cccccc);
+            border-radius: 4px;
             z-index: 1;
         }
 
-        .arm-left {
-            left: -35px;
-            transform-origin: top right;
-            transform: rotate(15deg);
+        .antenna-ball {
+            position: absolute;
+            top: -42px;
+            width: 22px;
+            height: 22px;
+            background-color: #00f0ff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00f0ff;
+            z-index: 2;
         }
 
-        .arm-right {
-            right: -35px;
-            transform-origin: top left;
-            transform: rotate(-15deg);
+        /* Floating Hands */
+        .hand {
+            position: absolute;
+            width: 38px;
+            height: 55px;
+            background: linear-gradient(145deg, #2b2e33, #15171a);
+            border: 2px solid #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            top: 100px;
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 3;
         }
 
-        /* Hand Checking Self Out Animation */
-        .inspecting .arm-left {
-            transform: rotate(115deg) translateY(-20px) translateX(10px);
-        }
-        .inspecting .arm-right {
-            transform: rotate(-30deg) translateY(10px);
+        .hand-left {
+            left: -48px;
         }
 
-        /* Sleepy Arms Droop */
-        .sleepy .arm-left {
-            transform: rotate(5deg) translateY(25px);
-        }
-        .sleepy .arm-right {
-            transform: rotate(-5deg) translateY(25px);
+        .hand-right {
+            right: -48px;
         }
 
-        /* Main Head Chassis */
+        /* GESTURE ANIMATIONS */
+        /* Scratch Head Gesture */
+        .scratch-head .hand-right {
+            transform: translateY(-110px) translateX(-35px) rotate(-60deg);
+        }
+
+        /* Scratch Side/Itch Gesture */
+        .scratch-side .hand-left {
+            transform: translateY(30px) translateX(25px) rotate(45deg);
+        }
+
+        /* Adjust Visor / Self Check Gesture */
+        .check-self .hand-left {
+            transform: translateY(-40px) translateX(30px) rotate(20deg);
+        }
+        .check-self .hand-right {
+            transform: translateY(-40px) translateX(-30px) rotate(-20deg);
+        }
+
+        /* Main Rounded Egg-Head Chassis */
         .robot-head {
-            width: 310px;
+            width: 290px;
             height: 270px;
-            background: linear-gradient(145deg, #ffffff, #e0e0e0);
-            border-radius: 100px 100px 85px 85px;
+            background: linear-gradient(145deg, #ffffff, #d8d8d8);
+            border-radius: 120px 120px 100px 100px;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.7), inset 0 8px 15px #ffffff;
+            box-shadow: 0 25px 55px rgba(0,0,0,0.7), inset 0 8px 18px #ffffff;
             z-index: 2;
-            transition: transform 0.4s ease;
         }
 
-        /* Ear Nodules */
-        .robot-head::before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 95px;
-            width: 22px;
-            height: 65px;
-            background: #d0d0d0;
-            border-radius: 18px 0 0 18px;
-        }
-        .robot-head::after {
-            content: '';
-            position: absolute;
-            right: -20px;
-            top: 95px;
-            width: 22px;
-            height: 65px;
-            background: #d0d0d0;
-            border-radius: 0 18px 18px 0;
-        }
-
-        /* Visor Screen */
+        /* Black Curved Visor */
         .visor {
-            width: 250px;
-            height: 190px;
-            background-color: #101214;
-            border-radius: 65px;
+            width: 240px;
+            height: 185px;
+            background-color: #0c0d0e;
+            border-radius: 75px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 22px;
-            box-shadow: inset 0 0 22px rgba(0,0,0,0.95);
+            gap: 18px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.95), 0 0 5px rgba(255,255,255,0.2);
             position: relative;
         }
 
+        /* Bright Cyan Pixel Eyes */
         .eyes-container {
             display: flex;
             justify-content: space-around;
-            width: 160px;
+            width: 150px;
         }
 
         .eye {
             width: 44px;
             height: 44px;
             background-color: #00f0ff;
-            border-radius: 14px;
-            box-shadow: 0 0 18px #00f0ff;
-            transition: transform 0.08s ease-out, height 0.15s ease, background-color 0.4s ease;
+            border-radius: 16px;
+            box-shadow: 0 0 20px #00f0ff;
+            transition: transform 0.08s ease-out, height 0.12s ease;
         }
 
         .mouth {
-            width: 55px;
+            width: 50px;
             height: 10px;
             background-color: #00f0ff;
             border-radius: 10px;
-            box-shadow: 0 0 14px #00f0ff;
-            transition: all 0.2s ease;
-        }
-
-        /* Expression Modifiers */
-        .bored .eye {
-            background-color: #ffaa00;
-            box-shadow: 0 0 18px #ffaa00;
-            height: 20px;
-            border-radius: 6px;
-        }
-
-        .bored .mouth {
-            background-color: #ffaa00;
-            box-shadow: 0 0 14px #ffaa00;
-            width: 40px;
-            height: 6px;
-        }
-
-        .sleepy .eye {
-            background-color: #aa55ff;
-            box-shadow: 0 0 18px #aa55ff;
-            height: 8px;
-            border-radius: 4px;
-        }
-
-        .sleepy .mouth {
-            background-color: #aa55ff;
-            box-shadow: 0 0 14px #aa55ff;
-            width: 25px;
-            height: 12px;
-            border-radius: 50%;
+            box-shadow: 0 0 15px #00f0ff;
+            transition: all 0.15s ease;
         }
 
         .status-badge {
@@ -198,7 +174,6 @@ robot_html = """
             font-size: 14px;
             color: #00f0ff;
             letter-spacing: 0.5px;
-            transition: color 0.3s ease;
         }
 
         #webcam {
@@ -214,7 +189,9 @@ robot_html = """
     <video id="webcam" autoplay playsinline></video>
 
     <div class="robot-wrapper" id="robotWrapper" onclick="interact()">
-        <div class="arm arm-left"></div>
+        <div class="antenna-ball"></div>
+        <div class="antenna-stem"></div>
+        <div class="hand hand-left"></div>
         <div class="robot-head">
             <div class="visor">
                 <div class="eyes-container">
@@ -224,21 +201,19 @@ robot_html = """
                 <div class="mouth" id="robotMouth"></div>
             </div>
         </div>
-        <div class="arm arm-right"></div>
+        <div class="hand hand-right"></div>
     </div>
 
-    <div class="status-badge" id="status">Tap face to activate robot!</div>
+    <div class="status-badge" id="status">Tap face to start ultra-realistic bot!</div>
 
     <script>
         let isActivated = false;
-        let lastInteractionTime = Date.now();
-        let currentState = "awake"; // awake, bored, sleepy, inspecting
-        let blinkTimeout;
+        let currentGesture = "";
 
-        // Organic Blinking System
+        // Randomized Organic Blinking System
         function scheduleBlink() {
-            const nextBlink = Math.random() * 3500 + 1500; // Random interval 1.5s - 5s
-            blinkTimeout = setTimeout(() => {
+            const nextBlink = Math.random() * 3000 + 1500;
+            setTimeout(() => {
                 triggerBlink();
                 scheduleBlink();
             }, nextBlink);
@@ -247,72 +222,52 @@ robot_html = """
         function triggerBlink() {
             const leftEye = document.getElementById('leftEye');
             const rightEye = document.getElementById('rightEye');
-            
-            if (currentState === 'sleepy') return; // Don't blink if eyes are already closed/sleepy
-
-            const origLeftHeight = leftEye.style.height;
-            const origRightHeight = rightEye.style.height;
 
             leftEye.style.height = '4px';
             rightEye.style.height = '4px';
 
             setTimeout(() => {
-                leftEye.style.height = origLeftHeight;
-                rightEye.style.height = origRightHeight;
+                leftEye.style.height = '44px';
+                rightEye.style.height = '44px';
             }, 120);
         }
 
-        // Behavior State Machine (Checks every second)
-        setInterval(() => {
-            if (!isActivated) return;
+        // Random Organic Hand Gestures (Triggers every 7 - 14 seconds automatically)
+        function scheduleRandomGestures() {
+            const nextGestureTime = Math.random() * 7000 + 7000;
+            setTimeout(() => {
+                if (isActivated) {
+                    triggerRandomGesture();
+                }
+                scheduleRandomGestures();
+            }, nextGestureTime);
+        }
 
-            const idleTime = (Date.now() - lastInteractionTime) / 1000;
+        function triggerRandomGesture() {
             const wrapper = document.getElementById('robotWrapper');
-            const status = document.getElementById('status');
+            const gestures = ['scratch-head', 'scratch-side', 'check-self'];
+            const randomPick = gestures[Math.floor(Math.random() * gestures.length)];
 
-            if (idleTime > 30 && currentState !== 'sleepy') {
-                // Sleepy State
-                currentState = 'sleepy';
-                wrapper.className = 'robot-wrapper sleepy';
-                status.innerText = 'State: Sleepy... (Zzz)';
-                status.style.color = '#aa55ff';
-                speak("Yawn... Getting a bit sleepy at my desk.");
-            } else if (idleTime > 15 && idleTime <= 30 && currentState !== 'bored' && currentState !== 'inspecting') {
-                // Bored State / Inspecting self
-                currentState = 'inspecting';
-                wrapper.className = 'robot-wrapper inspecting';
-                status.innerText = 'State: Checking itself out...';
-                status.style.color = '#ffaa00';
-                
-                setTimeout(() => {
-                    if (currentState === 'inspecting') {
-                        currentState = 'bored';
-                        wrapper.className = 'robot-wrapper bored';
-                        status.innerText = 'State: Bored (Awaiting user)';
-                    }
-                }, 4000);
-            }
-        }, 1000);
+            wrapper.className = 'robot-wrapper ' + randomPick;
+
+            // Hold gesture for 2.5 seconds then return hands to floating position
+            setTimeout(() => {
+                wrapper.className = 'robot-wrapper';
+            }, 2500);
+        }
 
         function interact() {
-            lastInteractionTime = Date.now();
-            const wrapper = document.getElementById('robotWrapper');
-            const status = document.getElementById('status');
-
             if (!isActivated) {
                 isActivated = true;
-                status.innerText = 'State: Active & Listening';
-                speak("Hello Micheal! Systems fully active. Let's build something!");
+                document.getElementById('status').innerText = 'Bot Online & Listening';
+                speak("Hey Micheal! Systems operational. I'm ready to hang out at your desk.");
                 scheduleBlink();
+                scheduleRandomGestures();
                 initCameraTracking();
                 initVoice();
             } else {
-                // Wake up / Reset state
-                currentState = 'awake';
-                wrapper.className = 'robot-wrapper';
-                status.innerText = 'State: Active & Focused';
-                status.style.color = '#00f0ff';
-                speak("I'm awake and paying attention!");
+                triggerRandomGesture();
+                speak("Just adjusting my visor!");
             }
         }
 
@@ -363,16 +318,6 @@ robot_html = """
 
         function onResults(results) {
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                // Face detected -> Reset idle timer!
-                lastInteractionTime = Date.now();
-
-                if (currentState !== 'awake') {
-                    currentState = 'awake';
-                    document.getElementById('robotWrapper').className = 'robot-wrapper';
-                    document.getElementById('status').innerText = 'State: Active (Face Detected)';
-                    document.getElementById('status').style.color = '#00f0ff';
-                }
-
                 const landmarks = results.multiFaceLandmarks[0];
                 const nose = landmarks[1];
 
@@ -396,14 +341,13 @@ robot_html = """
             recognition.interimResults = false;
 
             recognition.onresult = (event) => {
-                lastInteractionTime = Date.now();
                 const last = event.results.length - 1;
                 const speech = event.results[last][0].transcript.toLowerCase();
 
                 if (speech.includes('hello') || speech.includes('hi')) {
                     speak("Hey Micheal! How are you doing today?");
-                } else if (speech.includes('wake up')) {
-                    speak("I am wide awake and ready!");
+                } else if (speech.includes('olivia')) {
+                    speak("Hello Olivia! Great to see you!");
                 } else {
                     speak("I heard you say " + speech);
                 }
