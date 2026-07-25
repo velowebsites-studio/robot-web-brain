@@ -3,100 +3,117 @@ import cv2
 import numpy as np
 import os
 import json
-from datetime import datetime
 
-st.set_page_config(page_title="Desktop Robot Dashboard", layout="centered")
+st.set_page_config(page_title="Desktop Robot Companion", layout="centered")
 
-# Set up storage
-USER_DIR = "registered_users"
-TASKS_FILE = "tasks.json"
-
-if not os.path.exists(USER_DIR):
-    os.makedirs(USER_DIR)
-
-if not os.path.exists(TASKS_FILE):
-    with open(TASKS_FILE, "w") as f:
-        json.dump([], f)
-
-# Initialize session state for user and mouth animation
+# Maintain active user in session state
 if "active_user" not in st.session_state:
     st.session_state["active_user"] = "Micheal"
 
-if "is_speaking" not in st.session_state:
-    st.session_state["is_speaking"] = False
+current_user = st.session_state["active_user"]
 
-# Function to render animated CSS Robot Face
+# Function to render cute 3D White Robot Face matching your picture
 def render_robot_face(is_speaking=False):
-    mouth_animation = "animation: speak 0.3s infinite alternate;" if is_speaking else ""
+    mouth_style = "height: 18px; width: 60px; border-radius: 0 0 20px 20px;" if is_speaking else "height: 8px; width: 45px; border-radius: 10px;"
     
     html_code = f"""
     <style>
-        .robot-container {{
+        .robot-stage {{
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1a1a2e;
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+            background: radial-gradient(circle, #2c302e 0%, #0f1110 100%);
+            padding: 30px;
+            border-radius: 30px;
             margin-bottom: 20px;
         }}
-        .robot-head {{
+        .robot-head-outer {{
             width: 220px;
-            height: 180px;
-            background: #16213e;
-            border: 4px solid #00ffcc;
-            border-radius: 35px;
+            height: 200px;
+            background: linear-gradient(145deg, #ffffff, #dcdcdc);
+            border-radius: 80px 80px 70px 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 5px 10px #ffffff;
+        }}
+        /* Left Ear Nodule */
+        .robot-head-outer::before {{
+            content: '';
+            position: absolute;
+            left: -18px;
+            top: 70px;
+            width: 20px;
+            height: 50px;
+            background: #e6e6e6;
+            border-radius: 15px 0 0 15px;
+            box-shadow: inset 2px 0 5px rgba(0,0,0,0.1);
+        }}
+        /* Right Ear Nodule */
+        .robot-head-outer::after {{
+            content: '';
+            position: absolute;
+            right: -18px;
+            top: 70px;
+            width: 20px;
+            height: 50px;
+            background: #e6e6e6;
+            border-radius: 0 15px 15px 0;
+            box-shadow: inset -2px 0 5px rgba(0,0,0,0.1);
+        }}
+        /* Black Glass Screen */
+        .screen-visor {{
+            width: 175px;
+            height: 140px;
+            background-color: #121314;
+            border-radius: 50px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            justify-content: space-around;
-            padding: 20px;
-            position: relative;
+            gap: 15px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
         }}
-        .eyes-container {{
+        .eyes-row {{
             display: flex;
-            justify-content: space-between;
-            width: 140px;
+            justify-content: space-around;
+            width: 120px;
         }}
-        .eye {{
-            width: 45px;
-            height: 45px;
-            background-color: #00ffcc;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #00ffcc;
+        .eye-pixel {{
+            width: 32px;
+            height: 32px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 12px #ffffff;
             animation: blink 4s infinite;
         }}
-        .mouth {{
-            width: 80px;
-            height: 12px;
-            background-color: #00ffcc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #00ffcc;
-            {mouth_animation}
+        .mouth-pixel {{
+            background-color: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
+            transition: all 0.2s ease;
+            {mouth_style}
         }}
         @keyframes blink {{
             0%, 90%, 100% {{ transform: scaleY(1); }}
             95% {{ transform: scaleY(0.1); }}
         }}
-        @keyframes speak {{
-            0% {{ height: 8px; width: 70px; }}
-            100% {{ height: 30px; width: 90px; border-radius: 15px; }}
-        }}
     </style>
-    <div class="robot-container">
-        <div class="robot-head">
-            <div class="eyes-container">
-                <div class="eye"></div>
-                <div class="eye"></div>
+    <div class="robot-stage">
+        <div class="robot-head-outer">
+            <div class="screen-visor">
+                <div class="eyes-row">
+                    <div class="eye-pixel"></div>
+                    <div class="eye-pixel"></div>
+                </div>
+                <div class="mouth-pixel"></div>
             </div>
-            <div class="mouth"></div>
         </div>
     </div>
     """
-    st.components.v1.html(html_code, height=240)
+    st.components.v1.html(html_code, height=280)
 
-# Browser native text-to-speech
+# Native browser voice output
 def speak_browser(text):
     js_code = f"""
     <script>
@@ -107,64 +124,44 @@ def speak_browser(text):
     """
     st.components.v1.html(js_code, height=0)
 
-# --- APP LAYOUT ---
-st.title("🤖 Desktop Robot Brain")
+# --- DASHBOARD ---
+st.title("🤖 White Companion Bot")
 
-# Step 1: Render Animated Robot Face
-render_robot_face(is_speaking=st.session_state["is_speaking"])
+# 1. Render Cute 3D White Bot Head
+render_robot_face(is_speaking=st.session_state.get("speaking", False))
 
-# Step 2: User Switcher
-user_option = st.radio("Active User:", ["Micheal", "Olivia"], horizontal=True)
+# 2. Select Detected User
+user_option = st.radio("Recognized Profile:", ["Micheal", "Olivia"], horizontal=True)
 st.session_state["active_user"] = user_option
-current_user = st.session_state["active_user"]
 
-# Step 3: Conversational Chat Interface
-st.markdown("---")
-st.subheader(f"💬 Chatting with **{current_user}**")
-
-def generate_response(user_input, user_name):
+# 3. Intelligent Responses
+def generate_robot_response(user_input, user_name):
     msg = user_input.lower()
+    
     if "hello" in msg or "hi" in msg or "hey" in msg:
         if user_name == "Micheal":
-            return "Hey Micheal! Welcome back to your desk. Ready to get to work?"
+            return "Hey Micheal! Good to see you back at your desk. What are we making today?"
         else:
-            return "Hi Olivia! Great to see you! Hope you have an awesome day!"
+            return "Hi Olivia! Great to see you! Hope you are having an amazing day!"
+            
     elif "how are you" in msg:
-        return f"I'm doing great, {user_name}! All my circuits are running at 100 percent."
-    elif "remind" in msg or "task" in msg or "alarm" in msg:
-        return f"Got it, {user_name}! I will keep that saved in my memory for you."
+        return f"I am feeling awesome, {user_name}! Ready to chat."
+        
+    elif "remind" in msg or "task" in msg:
+        return f"Got it, {user_name}! Saved to desk memory."
+        
     elif "bye" in msg:
-        return f"Goodbye {user_name}! Talk to you soon."
+        return f"Goodbye {user_name}! Have a great day!"
+        
     else:
-        return f"I heard you say '{user_input}', {user_name}!"
+        return f"I heard you say {user_input}, {user_name}!"
 
-user_message = st.text_input("Type a message to your robot:", key="chat_input")
+# Chat Bar
+user_message = st.text_input(f"Talk to your robot ({user_option}):", key="chat_input")
 
-if st.button("Send Message"):
+if st.button("Speak to Robot"):
     if user_message:
-        reply = generate_response(user_message, current_user)
-        st.session_state["is_speaking"] = True
+        reply = generate_robot_response(user_message, user_option)
+        st.session_state["speaking"] = True
         st.write(f"🤖 **Robot:** {reply}")
         speak_browser(reply)
-
-# Step 4: Tasks & Reminders
-st.markdown("---")
-st.subheader("📅 Task & Reminder Memory")
-
-with open(TASKS_FILE, "r") as f:
-    task_list = json.load(f)
-
-new_task = st.text_input("Add a reminder for the desk robot:", placeholder="e.g., Set an alarm for 3 PM")
-
-if st.button("Save Task"):
-    if new_task:
-        timestamp = datetime.now().strftime("%I:%M %p")
-        task_list.append({"user": current_user, "task": new_task, "time": timestamp})
-        with open(TASKS_FILE, "w") as f:
-            json.dump(task_list, f)
-        st.success("Task saved to robot memory!")
-
-if task_list:
-    st.write("**Stored Tasks:**")
-    for item in task_list:
-        st.write(f"- [{item['time']}] **{item['user']}**: {item['task']}")
