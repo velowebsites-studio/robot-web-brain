@@ -1,10 +1,9 @@
 import streamlit as st
-import json
 
 st.set_page_config(page_title="Desktop Robot", layout="wide", initial_sidebar_state="collapsed")
 
-# Hide Streamlit header, footer, and margins to make the face fill the screen
-hide_streamlit_style = """
+# Hide Streamlit header/footer for full-screen view
+st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
@@ -12,10 +11,9 @@ hide_streamlit_style = """
         .block-container {padding: 0px !important;}
         body {background-color: #0f1110;}
     </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# Full-screen Interactive Robot Face with Voice & Eye Motion
+# Interactive HTML/JS Robot Face with Camera Tracking
 robot_html = """
 <!DOCTYPE html>
 <html>
@@ -30,7 +28,7 @@ robot_html = """
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: sans-serif;
             overflow: hidden;
             color: white;
         }
@@ -48,29 +46,7 @@ robot_html = """
             cursor: pointer;
         }
 
-        /* Ear nodules */
-        .robot-head::before {
-            content: '';
-            position: absolute;
-            left: -22px;
-            top: 100px;
-            width: 25px;
-            height: 70px;
-            background: #d8d8d8;
-            border-radius: 20px 0 0 20px;
-        }
-        .robot-head::after {
-            content: '';
-            position: absolute;
-            right: -22px;
-            top: 100px;
-            width: 25px;
-            height: 70px;
-            background: #d8d8d8;
-            border-radius: 0 20px 20px 0;
-        }
-
-        /* Screen Visor */
+        /* Visor */
         .visor {
             width: 260px;
             height: 200px;
@@ -91,21 +67,13 @@ robot_html = """
             width: 170px;
         }
 
-        .eye-socket {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
         .eye {
             width: 42px;
             height: 42px;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 0 15px #ffffff;
-            transition: transform 0.1s ease-out;
+            transition: transform 0.05s ease-out;
         }
 
         .mouth {
@@ -114,135 +82,119 @@ robot_html = """
             background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 0 12px #ffffff;
-            transition: all 0.15s ease;
-        }
-
-        .talking {
-            animation: speakMouth 0.3s infinite alternate;
-        }
-
-        @keyframes speakMouth {
-            0% { height: 8px; width: 50px; border-radius: 10px; }
-            100% { height: 28px; width: 70px; border-radius: 0 0 20px 20px; }
+            transition: all 0.1s ease;
         }
 
         .status-text {
             margin-top: 25px;
             font-size: 16px;
-            color: #888888;
+            color: #00ffcc;
             text-align: center;
         }
+
+        #webcam {
+            display: none; /* Hidden camera element for processing */
+        }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
 <body>
+
+    <video id="webcam" autoplay playsinline></video>
 
     <div class="robot-head" onclick="activateRobot()">
         <div class="visor">
             <div class="eyes-container">
-                <div class="eye-socket"><div class="eye" id="leftEye"></div></div>
-                <div class="eye-socket"><div class="eye" id="rightEye"></div></div>
+                <div class="eye" id="leftEye"></div>
+                <div class="eye" id="rightEye"></div>
             </div>
             <div class="mouth" id="robotMouth"></div>
         </div>
     </div>
 
-    <div class="status-text" id="status">Tap the robot head to start audio & listening!</div>
+    <div class="status-text" id="status">Tap face to enable camera & voice tracking!</div>
 
     <script>
         let isActivated = false;
 
-        // Eye Movement Logic (Eyes track touch/cursor)
-        document.addEventListener('mousemove', (e) => {
-            moveEyes(e.clientX, e.clientY);
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                moveEyes(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        });
-
-        function moveEyes(targetX, targetY) {
-            const eyes = [document.getElementById('leftEye'), document.getElementById('rightEye')];
-            eyes.forEach(eye => {
-                const rect = eye.getBoundingClientRect();
-                const eyeX = rect.left + rect.width / 2;
-                const eyeY = rect.top + rect.height / 2;
-                
-                const angle = Math.atan2(targetY - eyeY, targetX - eyeX);
-                const distance = Math.min(12, Math.hypot(targetX - eyeX, targetY - eyeY) / 15);
-                
-                const moveX = Math.cos(angle) * distance;
-                const moveY = Math.sin(angle) * distance;
-                
-                eye.style.transform = `translate(${moveX}px, ${moveY}px)`;
-            });
-        }
-
-        // Tap to Activate Audio & Speech Recognition
         function activateRobot() {
             if (!isActivated) {
                 isActivated = true;
-                document.getElementById('status').innerText = "Robot Active! Speak to me...";
-                speak("Hello Micheal! I am ready. How can I help you at your desk today?");
-                startListening();
+                document.getElementById('status').innerText = "Starting camera tracking...";
+                speak("Camera tracking enabled! I am watching for your face, Micheal.");
+                initCameraTracking();
             }
         }
 
-        // Speak function
         function speak(text) {
-            const mouth = document.getElementById('robotMouth');
-            mouth.classList.add('talking');
-
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            utterance.onend = function() {
-                mouth.classList.remove('talking');
-            };
-
             window.speechSynthesis.speak(utterance);
         }
 
-        // Voice Listening Function
-        function startListening() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                document.getElementById('status').innerText = "Speech recognition not supported on this browser.";
-                return;
-            }
+        function initCameraTracking() {
+            const videoElement = document.getElementById('webcam');
 
-            const recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+            const faceMesh = new FaceMesh({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+            });
 
-            recognition.onresult = function(event) {
-                const last = event.results.length - 1;
-                const spokenText = event.results[last][0].transcript.toLowerCase();
-                document.getElementById('status').innerText = 'You said: "' + spokenText + '"';
+            faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
 
-                // Conversational responses
-                if (spokenText.includes('hello') || spokenText.includes('hi') || spokenText.includes('hey')) {
-                    speak("Hey Micheal! Good to see you!");
-                } else if (spokenText.includes('how are you')) {
-                    speak("I am feeling great! Everything is working smoothly.");
-                } else if (spokenText.includes('olivia')) {
-                    speak("Hello Olivia! Hope you are having an awesome day!");
+            faceMesh.onResults(onResults);
+
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await faceMesh.send({ image: videoElement });
+                },
+                width: 640,
+                height: 480
+            });
+
+            camera.start();
+            document.getElementById('status').innerText = "Tracking your head & expressions live!";
+        }
+
+        function onResults(results) {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarks = results.multiFaceLandmarks[0];
+
+                // Nose tip landmark index: 1
+                const nose = landmarks[1];
+
+                // Map face position to eye displacement (-15px to 15px)
+                // Note: video is mirrored horizontally
+                const moveX = (0.5 - nose.x) * 40; 
+                const moveY = (nose.y - 0.5) * 40;
+
+                const leftEye = document.getElementById('leftEye');
+                const rightEye = document.getElementById('rightEye');
+                const mouth = document.getElementById('robotMouth');
+
+                leftEye.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                rightEye.style.transform = `translate(${moveX}px, ${moveY}px)`;
+
+                // Track mouth opening landmark gap (Upper lip: 13, Lower lip: 14)
+                const upperLip = landmarks[13];
+                const lowerLip = landmarks[14];
+                const mouthGap = Math.abs(lowerLip.y - upperLip.y);
+
+                if (mouthGap > 0.05) {
+                    // Open mouth when user opens mouth/talks
+                    mouth.style.height = "25px";
+                    mouth.style.borderRadius = "0 0 15px 15px";
                 } else {
-                    speak("I heard you say " + spokenText);
+                    mouth.style.height = "10px";
+                    mouth.style.borderRadius = "10px";
                 }
-            };
-
-            recognition.onerror = function() {
-                setTimeout(() => { recognition.start(); }, 1000);
-            };
-
-            recognition.onend = function() {
-                recognition.start(); // Keep listening automatically
-            };
-
-            recognition.start();
+            }
         }
     </script>
 </body>
